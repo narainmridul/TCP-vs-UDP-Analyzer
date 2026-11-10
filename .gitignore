@@ -1,1 +1,3 @@
 .arena/
+__pycache__/
+*.pyc
