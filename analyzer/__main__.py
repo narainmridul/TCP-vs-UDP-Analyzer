@@ -52,6 +52,11 @@ def main(argv=None):
 
     sub.add_parser("scenarios", help="list the built-in network scenarios")
 
+    w = sub.add_parser("web", help="open the interactive dashboard in a browser")
+    w.add_argument("--port", type=int, default=8000)
+    w.add_argument("--out", default="results")
+    w.add_argument("--no-browser", action="store_true")
+
     rp = sub.add_parser("report", help="rebuild report.html from a results.json")
     rp.add_argument("results_json")
 
@@ -87,6 +92,10 @@ def main(argv=None):
         for line in report.findings(data):
             print(f"  • {line}")
         print(f"\nWrote {a.out}/results.json, {a.out}/results.csv and {path}")
+
+    elif a.cmd == "web":
+        from .web import run_web
+        run_web(a.port, a.out, not a.no_browser)
 
     elif a.cmd == "scenarios":
         for name, (title, prof) in SCENARIOS.items():

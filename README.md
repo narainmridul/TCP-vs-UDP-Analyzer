@@ -14,7 +14,19 @@ Pure Python 3.9+ standard library: nothing to install.
    └──────────── control :5000 (JSON, unimpaired) ◄┘   "what did you receive?"
 ```
 
-## Quick start
+## Dashboard (for the demo)
+
+```bash
+python3 -m analyzer web
+```
+
+Opens `http://127.0.0.1:8000`. **Live test**: pick a network condition (or tune delay, jitter, loss,
+corruption, duplication, bandwidth and queue with sliders), set the workload, and run. TCP and UDP go through
+the same emulated link on real sockets. You get a scorecard, a per-message delay timeline (retransmission
+stalls and losses are visible), and a delivery map of every message. **Benchmark**: runs all scenarios
+and shows the comparison table and findings, with a link to the printable report.
+
+## Quick start (command line)
 
 ```bash
 python3 -m analyzer benchmark            # all 8 scenarios, ~75 s
@@ -128,6 +140,7 @@ analyzer/
   scenarios.py  the 8 named network conditions
   benchmark.py  runs everything, saves JSON/CSV
   report.py     terminal tables, findings, HTML report with SVG charts
+  web.py        dashboard server (stdlib http.server) + static/index.html
 tests/          unit tests + end-to-end tests over real sockets
 ```
 
