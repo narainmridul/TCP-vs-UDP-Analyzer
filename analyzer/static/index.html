@@ -2,9 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TCP vs UDP Analyzer</title>
 <style>
-:root{--bg:#fbfaf8;--card:#fff;--ink:#1a1a18;--mute:#8a8983;--line:#ebe9e4;--tcp:#2f62d8;--udp:#e2672b;--bad:#c93a30;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121211;--card:#1b1b19;--ink:#ecebe6;--mute:#8c8b85;--line:#2b2a27;--tcp:#7aa2f7;--udp:#f39a5b;--bad:#f07167;color-scheme:dark}}
-:root[data-theme=dark]{--bg:#121211;--card:#1b1b19;--ink:#ecebe6;--mute:#8c8b85;--line:#2b2a27;--tcp:#7aa2f7;--udp:#f39a5b;--bad:#f07167;color-scheme:dark}
+:root{--bg:#fbfaf8;--card:#fff;--ink:#1a1a18;--mute:#8a8983;--line:#ebe9e4;--tcp:#2f62d8;--udp:#e2672b;--bad:#d4145a;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121211;--card:#1b1b19;--ink:#ecebe6;--mute:#8c8b85;--line:#2b2a27;--tcp:#7aa2f7;--udp:#f39a5b;--bad:#ff4f8b;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#121211;--card:#1b1b19;--ink:#ecebe6;--mute:#8c8b85;--line:#2b2a27;--tcp:#7aa2f7;--udp:#f39a5b;--bad:#ff4f8b;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
 main{max-width:1120px;margin:0 auto;padding:28px 16px 60px}
@@ -108,8 +108,8 @@ a{color:var(--tcp)}
       <canvas id="tl" height="220"></canvas>
       <p class="caption">Each dot is one message, in send order (log scale). Gaps are lost messages. TCP spikes are retransmissions stalling everything behind them.</p>
       <h3>Delivery map</h3>
-      <canvas id="strip" height="46"></canvas>
-      <p class="caption">One cell per message. <span style="color:var(--bad)">■</span> lost &nbsp; <span id="ooo-key">■</span> arrived out of order</p>
+      <canvas id="strip" height="58"></canvas>
+      <p class="caption">One cell per message, in send order. <span style="color:var(--bad)">▮</span> lost (tall pink mark) &nbsp; <span id="ooo-key">■</span> arrived out of order &nbsp; dark = arrived fine. <span id="mapcount"></span></p>
     </div>
   </div>
 </section>
@@ -216,8 +216,11 @@ function draw(t, u){
   g.globalAlpha = 1;
   const [s,sw,sh] = canvas($("#strip")), row = (p, y, c) => { const ooo = new Set(p.series.ooo), cw = (sw-L)/n;
     s.fillStyle = css("--mute"); s.font = "10px system-ui"; s.fillText(p.proto.toUpperCase(), 0, y+12);
-    p.series.lat.forEach((v,i) => { s.fillStyle = v==null ? css("--bad") : ooo.has(i) ? css(c) : css("--line"); s.fillRect(L+i*cw, y, Math.max(cw-.3,.6), 16); }); };
-  row(t, 2, "--tcp"); row(u, 26, "--udp"); $("#ooo-key").style.color = css("--udp");
+    p.series.lat.forEach((v,i) => { s.fillStyle = ooo.has(i) ? css(c) : css("--line"); if(v!=null) s.fillRect(L+i*cw, y, Math.max(cw-.3,.6), 16); });
+    s.fillStyle = css("--bad");  // lost: drawn last, taller and at least 2px wide so they never hide
+    p.series.lat.forEach((v,i) => { if(v==null) s.fillRect(L+i*cw-.5, y-4, Math.max(cw,2), 24); }); };
+  row(t, 6, "--tcp"); row(u, 34, "--udp"); $("#ooo-key").style.color = css("--udp");
+  $("#mapcount").textContent = `This run: TCP ${t.lost} lost, ${t.out_of_order} out of order · UDP ${u.lost} lost, ${u.out_of_order} out of order.`;
 }
 addEventListener("resize", () => last && draw(...last));
 
